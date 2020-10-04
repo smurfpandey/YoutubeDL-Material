@@ -20,7 +20,7 @@ jobs:
       - name: Prepare
         id: prep
         run: |
-          DOCKER_IMAGE=ghcr.io/smurfpandey/YoutubeDL-Material
+          DOCKER_IMAGE=ghcr.io/smurfpandey/youtubedl-material
           VERSION=$GITHUB_SHA_SHORT
           TAGS="${DOCKER_IMAGE}:${VERSION}"
           echo ${TAGS}
