@@ -1,7 +1,4 @@
-FROM alpine:3.12 as frontend
-
-RUN apk add --no-cache \
-  npm
+FROM arm32v7/node:12.18.4-alpine3.12 as frontend
 
 RUN npm install -g @angular/cli
 
@@ -15,7 +12,7 @@ RUN ng build --prod
 
 #--------------#
 
-FROM alpine:3.12
+FROM arm32v7/node:12.18.4-alpine3.12
 
 ENV UID=1000 \
   GID=1000 \
@@ -25,7 +22,6 @@ RUN addgroup -S $USER -g $GID && adduser -D -S $USER -G $USER -u $UID
 
 RUN apk add --no-cache \
   ffmpeg \
-  npm \
   python2 \
   su-exec \
   && apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/ \

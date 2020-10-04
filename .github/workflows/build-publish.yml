@@ -26,11 +26,6 @@ jobs:
           echo ${TAGS}
           echo ::set-output name=tags::${TAGS}
 
-      - name: Download output from job 1
-        uses: actions/download-artifact@v2
-        with:
-          name: output
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@master
         with:
