@@ -14,12 +14,6 @@ RUN ng build --prod
 
 FROM arm32v7/node:12.18.4-alpine3.12
 
-ENV UID=1000 \
-  GID=1000 \
-  USER=youtube
-
-RUN addgroup -S $USER -g $GID && adduser -D -S $USER -G $USER -u $UID
-
 RUN apk add --no-cache \
   ffmpeg \
   python2 \
@@ -28,11 +22,11 @@ RUN apk add --no-cache \
     atomicparsley
 
 WORKDIR /app
-COPY --chown=$UID:$GID [ "backend/package.json", "backend/package-lock.json", "/app/" ]
-RUN npm install && chown -R $UID:$GID ./
+COPY [ "backend/package.json", "backend/package-lock.json", "/app/" ]
+RUN npm install
 
-COPY --chown=$UID:$GID --from=frontend [ "/build/backend/public/", "/app/public/" ]
-COPY --chown=$UID:$GID [ "/backend/", "/app/" ]
+COPY --from=frontend [ "/build/backend/public/", "/app/public/" ]
+COPY [ "/backend/", "/app/" ]
 
 EXPOSE 17442
 ENTRYPOINT [ "/app/entrypoint.sh" ]
