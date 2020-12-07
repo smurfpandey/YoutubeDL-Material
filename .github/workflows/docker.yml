@@ -10,7 +10,7 @@ jobs:
     steps:
       - name: checkout code
         uses: actions/checkout@v2
-      - uses: FranzDiebold/github-env-vars-action@v1.2.0
+      - uses: FranzDiebold/github-env-vars-action@v1.2.1
       - name: Prepare
         id: prep
         run: |
@@ -39,7 +39,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GHCR_TOKEN }}
-          
+
       - name: Build and push
         id: docker_build
         uses: docker/build-push-action@v2
