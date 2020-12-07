@@ -184,6 +184,7 @@ DEFAULT_CONFIG = {
       "Downloader": {
         "path-audio": "audio/",
         "path-video": "video/",
+        "default_file_output": "",
         "use_youtubedl_archive": false,
         "custom_args": "",
         "safe_download_override": false,
@@ -202,7 +203,10 @@ DEFAULT_CONFIG = {
         "use_API_key": false,
         "API_key": "",
         "use_youtube_API": false,
-        "youtube_API_key": ""
+        "youtube_API_key": "",
+        "use_twitch_API": false,
+        "twitch_API_key": "",
+        "twitch_auto_download_chat": false
       },
       "Themes": {
         "default_theme": "default",
@@ -226,6 +230,7 @@ DEFAULT_CONFIG = {
         }
       },
       "Advanced": {
+        "default_downloader": "youtube-dl",
         "use_default_downloading_agent": true,
         "custom_downloading_agent": "",
         "multi_user_mode": false,

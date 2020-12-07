@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener, EventEmitter, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, OnInit, HostListener, EventEmitter, OnDestroy, AfterViewInit, ViewChild } from '@angular/core';
 import { VgAPI } from 'ngx-videogular';
 import { PostsService } from 'app/posts.services';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -7,6 +7,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { InputDialogComponent } from 'app/input-dialog/input-dialog.component';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ShareMediaDialogComponent } from '../dialogs/share-media-dialog/share-media-dialog.component';
+import { TwitchChatComponent } from 'app/components/twitch-chat/twitch-chat.component';
 
 export interface IMedia {
   title: string;
@@ -31,6 +32,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   currentIndex = 0;
   currentItem: IMedia = null;
   api: VgAPI;
+  api_ready = false;
 
   // params
   fileNames: string[];
@@ -64,6 +66,8 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
   save_volume_timer = null;
   original_volume = null;
+
+  @ViewChild('twitchchat') twitchChat: TwitchChatComponent;
 
   @HostListener('window:resize', ['$event'])
   onResize(event) {
@@ -124,6 +128,8 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       this.getFile();
     } else if (this.id) {
       this.getPlaylistFiles();
+    } else if (this.subscriptionName) {
+      this.getSubscription();
     }
 
     if (this.url) {
@@ -139,7 +145,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       this.currentItem = this.playlist[0];
       this.currentIndex = 0;
       this.show_player = true;
-    } else if (this.subscriptionName || this.fileNames) {
+    } else if (this.fileNames && !this.subscriptionName) {
       this.show_player = true;
       this.parseFileNames();
     }
@@ -168,6 +174,25 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       } else if (!already_has_filenames) {
         this.openSnackBar('Error: Sharing has been disabled for this video!', 'Dismiss');
       }
+    });
+  }
+
+  getSubscription() {
+    this.postsService.getSubscription(null, this.subscriptionName).subscribe(res => {
+      const subscription = res['subscription'];
+      if (this.fileNames) {
+        subscription.videos.forEach(video => {
+          if (video['id'] === this.fileNames[0]) {
+            this.db_file = video;
+            this.show_player = true;
+            this.parseFileNames();
+          }
+        });
+      } else {
+        console.log('no file name specified');
+      }
+    }, err => {
+      this.openSnackBar(`Failed to find subscription ${this.subscriptionName}`, 'Dismiss');
     });
   }
 
@@ -202,23 +227,26 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       const fileName = this.fileNames[i];
       let baseLocation = null;
       let fullLocation = null;
-      if (!this.subscriptionName) {
-        baseLocation = this.type + '/';
-        fullLocation = this.baseStreamPath + baseLocation + encodeURIComponent(fileName);
-      } else {
-        // default to video but include subscription name param
-        baseLocation = this.type === 'audio' ? 'audio/' : 'video/';
-        fullLocation = this.baseStreamPath + baseLocation + encodeURIComponent(fileName) + '?subName=' + this.subscriptionName +
-                        '&subPlaylist=' + this.subPlaylist;
-      }
 
       // adds user token if in multi-user-mode
       const uuid_str = this.uuid ? `&uuid=${this.uuid}` : '';
       const uid_str = (this.id || !this.db_file) ? '' : `&uid=${this.db_file.uid}`;
-      const type_str = (this.id || !this.db_file || !this.db_file.type) ? '' : `&type=${this.db_file.type}`
+      const type_str = (this.type || !this.db_file) ? `&type=${this.type}` : `&type=${this.db_file.type}`
       const id_str = this.id ? `&id=${this.id}` : '';
+      const file_path_str = (!this.db_file) ? '' : `&file_path=${encodeURIComponent(this.db_file.path)}`;
+
+      if (!this.subscriptionName) {
+        baseLocation = 'stream/';
+        fullLocation = this.baseStreamPath + baseLocation + encodeURIComponent(fileName) + `?test=test${type_str}${file_path_str}`;
+      } else {
+        // default to video but include subscription name param
+        baseLocation = 'stream/';
+        fullLocation = this.baseStreamPath + baseLocation + encodeURIComponent(fileName) + '?subName=' + this.subscriptionName +
+                        '&subPlaylist=' + this.subPlaylist + `${file_path_str}${type_str}`;
+      }
+
       if (this.postsService.isLoggedIn) {
-        fullLocation += (this.subscriptionName ? '&' : '?') + `jwt=${this.postsService.token}`;
+        fullLocation += (this.subscriptionName ? '&' : '&') + `jwt=${this.postsService.token}`;
         if (this.is_shared) { fullLocation += `${uuid_str}${uid_str}${type_str}${id_str}`; }
       } else if (this.is_shared) {
         fullLocation += (this.subscriptionName ? '&' : '?') + `test=test${uuid_str}${uid_str}${type_str}${id_str}`;
@@ -246,6 +274,13 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onPlayerReady(api: VgAPI) {
       this.api = api;
+      this.api_ready = true;
+
+      this.api.subscriptions.seeked.subscribe(data => {
+        if (this.twitchChat) {
+          this.twitchChat.renewChat();
+        }
+      });
 
       // checks if volume has been previously set. if so, use that as default
       if (localStorage.getItem('player_volume')) {

@@ -18,6 +18,10 @@ let CONFIG_ITEMS = {
         'key': 'ytdl_video_folder_path',
         'path': 'YoutubeDLMaterial.Downloader.path-video'
     },
+    'ytdl_default_file_output': {
+        'key': 'ytdl_default_file_output',
+        'path': 'YoutubeDLMaterial.Downloader.default_file_output'
+    },
     'ytdl_use_youtubedl_archive': {
         'key': 'ytdl_use_youtubedl_archive',
         'path': 'YoutubeDLMaterial.Downloader.use_youtubedl_archive'
@@ -82,6 +86,18 @@ let CONFIG_ITEMS = {
         'key': 'ytdl_youtube_api_key',
         'path': 'YoutubeDLMaterial.API.youtube_API_key'
     },
+    'ytdl_use_twitch_api': {
+        'key': 'ytdl_use_twitch_api',
+        'path': 'YoutubeDLMaterial.API.use_twitch_API'
+    },
+    'ytdl_twitch_api_key': {
+        'key': 'ytdl_twitch_api_key',
+        'path': 'YoutubeDLMaterial.API.twitch_API_key'
+    },
+    'ytdl_twitch_auto_download_chat': {
+        'key': 'ytdl_twitch_auto_download_chat',
+        'path': 'YoutubeDLMaterial.API.twitch_auto_download_chat'
+    },
 
     // Themes
     'ytdl_default_theme': {
@@ -130,6 +146,10 @@ let CONFIG_ITEMS = {
     },
 
     // Advanced
+    'ytdl_default_downloader': {
+        'key': 'ytdl_default_downloader',
+        'path': 'YoutubeDLMaterial.Advanced.default_downloader'
+    },
     'ytdl_use_default_downloading_agent': {
         'key': 'ytdl_use_default_downloading_agent',
         'path': 'YoutubeDLMaterial.Advanced.use_default_downloading_agent'

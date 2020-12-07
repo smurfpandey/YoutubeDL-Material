@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { PostsService } from 'app/posts.services';
 import { Router } from '@angular/router';
+import { MatPaginator } from '@angular/material/paginator';
 
 @Component({
   selector: 'app-recent-videos',
@@ -50,6 +51,11 @@ export class RecentVideosComponent implements OnInit {
   };
   filterProperty = this.filterProperties['upload_date'];
 
+  pageSize = 10;
+  paged_data = null;
+
+  @ViewChild('paginator') paginator: MatPaginator
+
   constructor(public postsService: PostsService, private router: Router) {
     // get cached file count
     if (localStorage.getItem('cached_file_count')) {
@@ -92,6 +98,7 @@ export class RecentVideosComponent implements OnInit {
   private filterFiles(value: string) {
     const filterValue = value.toLowerCase();
     this.filtered_files = this.files.filter(option => option.id.toLowerCase().includes(filterValue));
+    this.pageChangeEvent({pageSize: this.pageSize, pageIndex: this.paginator.pageIndex});
   }
 
   filterByProperty(prop) {
@@ -100,6 +107,7 @@ export class RecentVideosComponent implements OnInit {
     } else {
       this.filtered_files = this.filtered_files.sort((a, b) => (a[prop] > b[prop] ? 1 : -1));
     }
+    if (this.paginator) { this.pageChangeEvent({pageSize: this.pageSize, pageIndex: this.paginator.pageIndex}) };
   }
 
   filterOptionChanged(value) {
@@ -133,6 +141,8 @@ export class RecentVideosComponent implements OnInit {
       localStorage.setItem('cached_file_count', '' + this.files.length);
 
       this.normal_files_received = true;
+
+      this.paged_data = this.filtered_files.slice(0, 10);
     });
   }
 
@@ -210,7 +220,7 @@ export class RecentVideosComponent implements OnInit {
 
       if (!this.postsService.config.Extra.file_manager_enabled) {
         // tell server to delete the file once downloaded
-        this.postsService.deleteFile(name, false).subscribe(delRes => {
+        this.postsService.deleteFile(name, type).subscribe(delRes => {
           // reload mp4s
           this.getAllFiles();
         });
@@ -233,7 +243,7 @@ export class RecentVideosComponent implements OnInit {
   }
 
   deleteNormalFile(file, index, blacklistMode = false) {
-    this.postsService.deleteFile(file.uid, file.isAudio, blacklistMode).subscribe(result => {
+    this.postsService.deleteFile(file.uid, file.isAudio ? 'audio' : 'video', blacklistMode).subscribe(result => {
       if (result) {
         this.postsService.openSnackBar('Delete success!', 'OK.');
         this.files.splice(index, 1);
@@ -276,13 +286,18 @@ export class RecentVideosComponent implements OnInit {
     const result = b.registered - a.registered;
     return result;
   }
-  
+
   durationStringToNumber(dur_str) {
     let num_sum = 0;
     const dur_str_parts = dur_str.split(':');
-    for (let i = dur_str_parts.length-1; i >= 0; i--) {
-      num_sum += parseInt(dur_str_parts[i])*(60**(dur_str_parts.length-1-i));
+    for (let i = dur_str_parts.length - 1; i >= 0; i--) {
+      num_sum += parseInt(dur_str_parts[i]) * (60 ** (dur_str_parts.length - 1 - i));
     }
     return num_sum;
+  }
+
+  pageChangeEvent(event) {
+    const offset = ((event.pageIndex + 1) - 1) * event.pageSize;
+    this.paged_data = this.filtered_files.slice(offset).slice(0, event.pageSize);
   }
 }

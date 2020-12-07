@@ -20,6 +20,7 @@ import { CreatePlaylistComponent } from 'app/create-playlist/create-playlist.com
 import { Platform } from '@angular/cdk/platform';
 import { v4 as uuid } from 'uuid';
 import { ArgModifierDialogComponent } from 'app/dialogs/arg-modifier-dialog/arg-modifier-dialog.component';
+import { RecentVideosComponent } from 'app/components/recent-videos/recent-videos.component';
 
 export let audioFilesMouseHovering = false;
 export let videoFilesMouseHovering = false;
@@ -200,6 +201,7 @@ export class MainComponent implements OnInit {
   formats_loading = false;
 
   @ViewChild('urlinput', { read: ElementRef }) urlInput: ElementRef;
+  @ViewChild('recentVideos') recentVideos: RecentVideosComponent;
   @ViewChildren('audiofilecard') audioFileCards: QueryList<FileCardComponent>;
   @ViewChildren('videofilecard') videoFileCards: QueryList<FileCardComponent>;
   last_valid_url = '';
@@ -487,6 +489,7 @@ export class MainComponent implements OnInit {
     this.downloadingfile = false;
     if (this.multiDownloadMode && !this.downloadOnlyMode && !navigate_mode) {
       // do nothing
+      this.reloadRecentVideos();
     } else {
       // if download only mode, just download the file. no redirect
       if (forceView === false && this.downloadOnlyMode && !this.iOS) {
@@ -496,6 +499,7 @@ export class MainComponent implements OnInit {
         } else {
           this.downloadAudioFile(decodeURI(name));
         }
+        this.reloadRecentVideos();
       } else {
         localStorage.setItem('player_navigator', this.router.url.split(';')[0]);
         if (is_playlist) {
@@ -524,6 +528,7 @@ export class MainComponent implements OnInit {
     this.downloadingfile = false;
     if (this.multiDownloadMode && !this.downloadOnlyMode && !navigate_mode) {
       // do nothing
+      this.reloadRecentVideos();
     } else {
       // if download only mode, just download the file. no redirect
       if (forceView === false && this.downloadOnlyMode) {
@@ -533,6 +538,7 @@ export class MainComponent implements OnInit {
         } else {
           this.downloadVideoFile(decodeURI(name));
         }
+        this.reloadRecentVideos();
       } else {
         localStorage.setItem('player_navigator', this.router.url.split(';')[0]);
         if (is_playlist) {
@@ -746,7 +752,7 @@ export class MainComponent implements OnInit {
 
       if (!this.fileManagerEnabled) {
         // tell server to delete the file once downloaded
-        this.postsService.deleteFile(name, true).subscribe(delRes => {
+        this.postsService.deleteFile(name, 'video').subscribe(delRes => {
           // reload mp3s
           this.getMp3s();
         });
@@ -763,7 +769,7 @@ export class MainComponent implements OnInit {
 
       if (!this.fileManagerEnabled) {
         // tell server to delete the file once downloaded
-        this.postsService.deleteFile(name, false).subscribe(delRes => {
+        this.postsService.deleteFile(name, 'audio').subscribe(delRes => {
           // reload mp4s
           this.getMp4s();
         });
@@ -1160,5 +1166,11 @@ export class MainComponent implements OnInit {
         // console.log('failed to get new download');
       }
     });
+  }
+
+  reloadRecentVideos() {
+    if (this.recentVideos) {
+      this.recentVideos.getAllFiles();
+    }
   }
 }
