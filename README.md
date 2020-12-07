@@ -3,6 +3,7 @@
 [![Heroku deploy badge](https://img.shields.io/badge/%E2%86%91_Deploy_to-Heroku-7056bf.svg)](https://heroku.com/deploy?template=https://github.com/smurfpandey/YoutubeDL-Material)
 [![License badge](https://img.shields.io/github/license/smurfpandey/YoutubeDL-Material)](https://github.com/smurfpandey/YoutubeDL-Material/blob/master/LICENSE.md)
 ![docker](https://github.com/smurfpandey/YoutubeDL-Material/workflows/docker/badge.svg)
+
 YoutubeDL-Material is a Material Design frontend for [youtube-dl](https://rg3.github.io/youtube-dl/). It's coded using [Angular 9](https://angular.io/) for the frontend, and [Node.js](https://nodejs.org/) on the backend.
 
 Now with [Docker](#Docker) support!
